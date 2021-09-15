@@ -1,0 +1,93 @@
+"""
+
+From the previous code of Vector Field 2D, using arrows to represent a vector field works fairly well. But matplotlib can do better than this—it can show the streamlines of a vector field. A streamline shows how the vector field flows. In this recipe, we will show you how to create streamlines. Let's use the fluid flow example of the previous recipe. You will simply replace the arrows ( the first code of vector field ) with streamlines, as shown in the following code.
+
+How the project work: 
+
+The code generating the sample vectors' coordinates is the same as in the previous recipe. Here, we use more samples (128*128 instead of 32*32) to get accurate streamlines. Apart from this, the only difference is that we use pyplot.streamlines() instead of pyplot.quiver(). The four mandatory parameters are the same: the coordinates X and Y of the samples, and the coordinates U and V of the vectors. The optional parameter color is used to set the streamlines' colors. 
+
+"""
+
+import numpy as np
+
+import sympy 
+
+from sympy.abc import x, y 
+
+from matplotlib import pyplot as plt 
+
+import matplotlib.patches as patches 
+
+import matplotlib.cm as cm 
+
+plt.style.use("dark_background")
+
+
+
+def cylinder_stream_function(U = 1, R = 1): 
+
+    r = sympy.sqrt(x ** 2 + y ** 2) 
+
+    theta = sympy.atan2(y, x) 
+
+    return U * (r - R ** 2 / r) * sympy.sin(theta) 
+
+ 
+
+def velocity_field(psi): 
+
+    u = sympy.lambdify((x, y), psi.diff(y), 'numpy') 
+
+    v = sympy.lambdify((x, y), -psi.diff(x), 'numpy') 
+
+    return u, v 
+
+ 
+
+psi = cylinder_stream_function() 
+
+U_func, V_func = velocity_field(psi) 
+
+xmin, xmax, ymin, ymax = -3, 3, -3, 3 
+
+Y, X = np.ogrid[ymin:ymax:128j, xmin:xmax:128j] 
+
+U, V = U_func(X, Y), V_func(X, Y) 
+
+M = (X ** 2 + Y ** 2) < 1. 
+
+U = np.ma.masked_array(U, mask = M) 
+
+V = np.ma.masked_array(V, mask = M)
+
+shape = patches.Circle((0, 0), radius = 1, lw = 2, fc = 'w', ec 
+
+    = 'k', zorder = 0) 
+
+ 
+
+plt.gca().add_patch(shape)
+
+plt.xticks([])
+
+plt.yticks([])
+
+plt.grid(False)
+
+plt.box(False)
+
+plt.streamplot(X, Y, U, V, color = U ** 2 + V ** 2, cmap = 
+
+   cm.PiYG)
+
+plt.show()
+
+plt.suptitle('Vector field using streamline and colormap in matplotlib!', fontsize=9, color="white")
+
+plt.title('Vector Field Remastered!', color="white", fontsize=15)
+
+plt.figtext(0.83, 0.01, "© Mǟɖ↻ôɖɆⱤ™", color="white", fontsize=10)
+
+plt.show()
+
+plt.savefig('myfig.png', dpi= 200)
